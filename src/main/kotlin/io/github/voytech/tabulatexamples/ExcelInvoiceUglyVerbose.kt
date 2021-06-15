@@ -2,41 +2,18 @@ package io.github.voytech.tabulatexamples
 
 import io.github.voytech.tabulate.api.builder.dsl.cell
 import io.github.voytech.tabulate.api.builder.dsl.footer
+import io.github.voytech.tabulate.excel.model.attributes.dataFormat
+import io.github.voytech.tabulate.model.CellType
 import io.github.voytech.tabulate.model.attributes.cell.*
 import io.github.voytech.tabulate.model.attributes.cell.enums.*
 import io.github.voytech.tabulate.model.attributes.row.height
+import io.github.voytech.tabulate.template.context.IndexLabel
 import io.github.voytech.tabulate.template.tabulate
 import java.math.BigDecimal
 import java.time.LocalDate
 
-data class InvoiceLineItem(
-    val description: String,
-    val qty: Int,
-    val unitPrice: BigDecimal,
-    val vat: BigDecimal,
-    val total: BigDecimal = unitPrice.multiply(vat)
-)
-
-data class CompanyAddress(
-    val contactName: String,
-    val companyName: String,
-    val address: String,
-    val address2: String = "",
-    val address3: String = "",
-    val phone: String = ""
-)
-
-data class InvoiceDetails(
-    val invoiceNumber: String,
-    val issueDate: LocalDate,
-    val dueDate: LocalDate,
-    val issuerCompany: CompanyAddress,
-    val clientCompany: CompanyAddress,
-    val items: List<InvoiceLineItem>
-)
-
 fun main(args: Array<String>) {
-    Inv.printInvoice(
+    InvoiceWithStyles.printInvoice(
         fileName = "invoice.xlsx",
         i = InvoiceDetails(
             invoiceNumber = "#00001",
@@ -61,12 +38,18 @@ fun main(args: Array<String>) {
                 InvoiceLineItem("Monitor Lenovo", 1,BigDecimal.valueOf(1333.33),BigDecimal.valueOf(0.23)),
                 InvoiceLineItem("Mechanical Keyboard Genesys", 1,BigDecimal.valueOf(233.99),BigDecimal.valueOf(0.23)),
                 InvoiceLineItem("Mouse - Logitech M185", 1,BigDecimal.valueOf(34.99),BigDecimal.valueOf(0.23)),
+                InvoiceLineItem("Headset - Syperlux HD330", 1,BigDecimal.valueOf(134.99),BigDecimal.valueOf(0.23)),
+                InvoiceLineItem("IPhone 11", 1,BigDecimal.valueOf(3004.99),BigDecimal.valueOf(0.23)),
+                InvoiceLineItem("Desk", 1,BigDecimal.valueOf(1234.99),BigDecimal.valueOf(0.23)),
+                InvoiceLineItem("Mouse - Logitech M185", 1,BigDecimal.valueOf(34.99),BigDecimal.valueOf(0.23)),
+                InvoiceLineItem("Mouse - Logitech M185", 1,BigDecimal.valueOf(34.99),BigDecimal.valueOf(0.23)),
+                InvoiceLineItem("Mouse - Logitech M185", 1,BigDecimal.valueOf(34.99),BigDecimal.valueOf(0.23)),
             )
         )
     )
 }
 
-object Inv{
+object InvoiceWithStyles{
     fun printInvoice(fileName: String, i: InvoiceDetails) {
         i.items.tabulate(fileName) {
             firstRow = 1
@@ -80,13 +63,13 @@ object Inv{
             }
             rows {
                 row {
-                    attributes { height { px = 200 } }
+                    attributes { height { px = 160 } }
                     cell {
                         value = i.issuerCompany.companyName
                         attributes {
                             text {
                                 weight = DefaultWeightStyle.BOLD
-                                fontSize = 16
+                                fontSize = 14
                             }
                             alignment {
                                 vertical = DefaultVerticalAlignment.MIDDLE
@@ -94,12 +77,17 @@ object Inv{
                             }
                         }
                     }
-                    cell(InvoiceLineItem::total) {
+                    cell {
+                        colSpan = 2
+                        value = ""
+                    }
+                    cell {
+                        colSpan = 2
                         value = "INVOICE"
                         attributes {
                             text {
                                 weight = DefaultWeightStyle.BOLD
-                                fontSize = 20
+                                fontSize = 16
                             }
                             alignment {
                                 vertical = DefaultVerticalAlignment.MIDDLE
@@ -108,9 +96,43 @@ object Inv{
                         }
                     }
                 }
-                row { cell { value =  i.issuerCompany.companyName } }
-                row { cell { value = i.issuerCompany.address } }
-                row { cell { value = i.issuerCompany.phone } }
+                row {
+                    cell {
+                        value =  i.issuerCompany.companyName
+                        colSpan = 3
+                    }
+                    cell {
+                        colSpan = 2
+                        rowSpan = 4
+                        value = "src/main/resources/image.png";
+                        type = CellType.IMAGE_URL
+                        attributes {
+                            borders {
+                                bottomBorderColor = Colors.BLACK
+                                bottomBorderStyle = DefaultBorderStyle.DOUBLE
+                                leftBorderColor = Colors.BLACK
+                                leftBorderStyle = DefaultBorderStyle.DOUBLE
+                                topBorderColor = Colors.BLACK
+                                topBorderStyle = DefaultBorderStyle.DOUBLE
+                                rightBorderColor = Colors.BLACK
+                                rightBorderStyle = DefaultBorderStyle.DOUBLE
+                            }
+                        }
+
+                    }
+                }
+                row {
+                    cell {
+                        value = i.issuerCompany.address
+                        colSpan = 3
+                    }
+                }
+                row {
+                    cell {
+                        value = i.issuerCompany.phone
+                        colSpan = 3
+                    }
+                }
                 row { }
                 row {
                     cells {
@@ -149,6 +171,7 @@ object Inv{
                     cell {
                         value = i.invoiceNumber
                         attributes {
+                            alignment { horizontal = DefaultHorizontalAlignment.CENTER }
                             borders {
                                 bottomBorderColor = Colors.BLACK
                                 bottomBorderStyle = DefaultBorderStyle.DOUBLE
@@ -165,14 +188,20 @@ object Inv{
                     cell { value = i.clientCompany.companyName }
                     cell { }
                     cell { value = "Invoice Date:"}
-                    cell { value = i.issueDate}
+                    cell {
+                        value = i.issueDate
+                        attributes { dataFormat { value = "yyyy-mm-dd" } }
+                    }
                 }
                 row {
                     cell { value = i.issuerCompany.contactName }
                     cell { value = i.clientCompany.contactName }
                     cell { }
                     cell { value = "Due Date:"}
-                    cell { value = i.dueDate}
+                    cell {
+                        value = i.dueDate
+                        attributes { dataFormat { value = "yyyy-mm-dd" } }
+                    }
                 }
                 row {
                     cell { value = i.issuerCompany.address }
@@ -210,8 +239,18 @@ object Inv{
                         }
                     }
                 }
-                footer {
-
+                footer { }
+                row(1, IndexLabel.DATASET_PROCESSED) {
+                    cell {
+                        colSpan = 2
+                        value = "Thank You for your business!"
+                    }
+                }
+                row(2, IndexLabel.DATASET_PROCESSED) {
+                    cell {
+                        colSpan = 2
+                        value = "Terms & Instructions"
+                    }
                 }
             }
         }
