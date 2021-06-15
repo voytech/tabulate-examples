@@ -20,6 +20,8 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib", kotlinVersion))
-    implementation("io.github.voytech","tabulate-excel",tabulateVersion)
+    implementation(platform("io.github.voytech:tabulate-bom:$tabulateVersion"))
+    implementation("io.github.voytech","tabulate-core")
+    implementation("io.github.voytech","tabulate-excel")
 }
 
