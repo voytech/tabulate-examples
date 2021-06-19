@@ -9,6 +9,7 @@ import io.github.voytech.tabulate.model.attributes.cell.enums.DefaultHorizontalA
 import io.github.voytech.tabulate.model.attributes.cell.enums.DefaultVerticalAlignment
 import io.github.voytech.tabulate.model.attributes.cell.enums.DefaultWeightStyle
 import io.github.voytech.tabulate.model.attributes.row.height
+import java.math.BigDecimal
 import java.time.LocalDate
 
 
@@ -21,6 +22,10 @@ fun <T> RowsBuilderApi<T>.separatorRow(height: Int? = null) {
         }
     }
 }
+fun <T> RowsBuilderApi<T>.separatorRows(count: Int = 1) {
+    (1..count).forEach { _ -> separatorRow() }
+}
+
 
 fun <T> CellsBuilderApi<T>.emptyCell(span: Int = 1) {
     cell {
@@ -41,6 +46,16 @@ fun <T> RowBuilderApi<T>.textCell(colSpan: Int = 1,rowSpan: Int = 1,valueSupplie
         type = CellType.STRING
     }
 }
+
+fun <T> RowBuilderApi<T>.decimalCell(colSpan: Int = 1,rowSpan: Int = 1,valueSupplier: () -> BigDecimal) {
+    cell {
+        this.colSpan = colSpan
+        this.rowSpan = rowSpan
+        value = valueSupplier()
+        type = CellType.NUMERIC
+    }
+}
+
 
 fun <T> RowBuilderApi<T>.dateCell(dateFormat: String = "yyyy-mm-dd",supplier: () -> LocalDate) {
     cells {

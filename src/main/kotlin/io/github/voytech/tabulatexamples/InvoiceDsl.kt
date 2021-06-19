@@ -12,10 +12,11 @@ import io.github.voytech.tabulate.model.attributes.cell.enums.DefaultWeightStyle
 import io.github.voytech.tabulate.model.attributes.row.height
 import io.github.voytech.tabulate.template.context.IndexLabel
 import io.github.voytech.tabulate.template.tabulate
+import java.math.BigDecimal
 import java.time.LocalDate
 
 
-fun <T> RowsBuilderApi<T>.invoiceHeaderRow() {
+fun RowsBuilderApi<InvoiceLineItem>.invoiceHeaderRow() {
     val invoiceLabel = "INVOICE"
     row {
         attributes { height { px = 160 } }
@@ -33,13 +34,13 @@ class CompanyHeaderRowBuilder {
     lateinit var issuer: CompanyAddress
 }
 
-fun <T> RowsBuilderApi<T>.companyHeaderRows(block: CompanyHeaderRowBuilder.() -> Unit) {
+fun RowsBuilderApi<InvoiceLineItem>.companyHeaderRows(block: CompanyHeaderRowBuilder.() -> Unit) {
     with(CompanyHeaderRowBuilder().apply(block)) {
         row {
             textCell(colSpan = 3) { issuer.companyName }
             cell {
                 colSpan = 2
-                rowSpan = 4
+                rowSpan = 8
                 value = imageUrl
                 type = CellType.IMAGE_URL
                 attributes {
@@ -59,10 +60,20 @@ fun <T> RowsBuilderApi<T>.companyHeaderRows(block: CompanyHeaderRowBuilder.() ->
         row {
             textCell(colSpan = 3) { issuer.phone }
         }
+        separatorRows(4)
+        /* - TODO does not work
+        row {
+            cell {
+                value = ""
+                rowSpan = 4
+                colSpan = 3
+            }
+        }
+         */
     }
 }
 
-fun <T> RowsBuilderApi<T>.invoiceItemsHeaderRow() {
+fun RowsBuilderApi<InvoiceLineItem>.invoiceItemsHeaderRow() {
     row {
         textCell { "DESCRIPTION" }
         textCell { "QTY" }
@@ -85,7 +96,7 @@ fun <T> RowsBuilderApi<T>.invoiceItemsHeaderRow() {
     }
 }
 
-class DetailsAndShippingBuilder {
+class InvoiceDetailsRowsBuilder {
     lateinit var invoiceNumber: String
     lateinit var issueDate: LocalDate
     lateinit var dueDate: LocalDate
@@ -93,8 +104,8 @@ class DetailsAndShippingBuilder {
     lateinit var client: CompanyAddress
 }
 
-fun <T> RowsBuilderApi<T>.invoiceShippingDetailsRow(block: DetailsAndShippingBuilder.() -> Unit) {
-    with(DetailsAndShippingBuilder().apply(block)) {
+fun RowsBuilderApi<InvoiceLineItem>.invoiceShippingDetailsRow(block: InvoiceDetailsRowsBuilder.() -> Unit) {
+    with(InvoiceDetailsRowsBuilder().apply(block)) {
         row {
             textCell { "BILL TO" }
             textCell { "SHIP TO" }
@@ -138,6 +149,39 @@ fun <T> RowsBuilderApi<T>.invoiceShippingDetailsRow(block: DetailsAndShippingBui
     }
 }
 
+class InvoiceSummaryRowsBuilder {
+    lateinit var subtotal: BigDecimal
+    lateinit var discounts: BigDecimal
+    lateinit var taxes: BigDecimal
+    lateinit var total: BigDecimal
+}
+
+//TODO section styles (section borders)
+fun RowsBuilderApi<InvoiceLineItem>.invoiceSummaryRow(block: InvoiceSummaryRowsBuilder.() -> Unit) {
+    with(InvoiceSummaryRowsBuilder().apply(block)) {
+        row(0,IndexLabel.DATASET_PROCESSED) {
+            emptyCell(colSpan = 3)
+            textCell { "Subtotal" } // TODO! addressing cells by index!
+            decimalCell { subtotal }
+        }
+        row(1,IndexLabel.DATASET_PROCESSED) {
+            emptyCell(colSpan = 3)
+            textCell { "Discounts" }
+            decimalCell { discounts }
+        }
+        row(2,IndexLabel.DATASET_PROCESSED) {
+            emptyCell(colSpan = 3)
+            textCell { "Taxes" }
+            decimalCell { taxes }
+        }
+        row(3,IndexLabel.DATASET_PROCESSED) {
+            emptyCell(colSpan = 3)
+            textCell { "Total" }
+            decimalCell { total }
+        }
+    }
+}
+
 fun Iterable<InvoiceLineItem>.printInvoice(
     fileName: String,
     issuer: CompanyAddress,
@@ -146,6 +190,7 @@ fun Iterable<InvoiceLineItem>.printInvoice(
     issueDate: LocalDate = LocalDate.now(),
     dueDate: LocalDate = LocalDate.now(),
 ) {
+    val items = this
     tabulate(fileName) {
         columns {
             column(InvoiceLineItem::description)
@@ -158,7 +203,7 @@ fun Iterable<InvoiceLineItem>.printInvoice(
             invoiceHeaderRow()
             companyHeaderRows {
                 this.issuer = issuer
-                imageUrl = "src/main/resources/image.png"
+                imageUrl = "src/main/resources/logo.png"
             }
             separatorRow()
             invoiceShippingDetailsRow {
@@ -171,10 +216,16 @@ fun Iterable<InvoiceLineItem>.printInvoice(
             separatorRow()
             invoiceItemsHeaderRow()
             footer {  }
-            row(1, IndexLabel.DATASET_PROCESSED) {
+            invoiceSummaryRow {
+                subtotal = items.sumOf { it.unitPrice.multiply(it.qty.toBigDecimal()) }
+                discounts = BigDecimal.ZERO
+                taxes = items.sumOf { it.vat.multiply(it.unitPrice.multiply(it.qty.toBigDecimal())) }
+                total = items.sumOf { it.total }
+            }
+            row(4, IndexLabel.DATASET_PROCESSED) {
                 textCell { "Thank You for your business!" }
             }
-            row(2, IndexLabel.DATASET_PROCESSED) {
+            row(5, IndexLabel.DATASET_PROCESSED) {
                 textCell { "Terms & Instructions" }
             }
         }
