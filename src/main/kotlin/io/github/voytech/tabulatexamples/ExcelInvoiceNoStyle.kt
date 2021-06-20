@@ -4,6 +4,7 @@ package io.github.voytech.tabulatexamples
 
 import io.github.voytech.tabulate.api.builder.dsl.cell
 import io.github.voytech.tabulate.api.builder.dsl.footer
+import io.github.voytech.tabulate.api.builder.dsl.trailingRow
 import io.github.voytech.tabulate.excel.model.attributes.dataFormat
 import io.github.voytech.tabulate.model.attributes.row.height
 import io.github.voytech.tabulate.template.context.IndexLabel
@@ -105,11 +106,11 @@ object InvoiceWithoutStyle {
                     cell { value = "TOTAL" }
                 }
                 footer { }
-                row(1, IndexLabel.DATASET_PROCESSED) {
-                    cell { colSpan = 2; value = "Thank You for your business!" }
+                trailingRow(1) {
+                    //cell { value = "Thank You for your business!" }
                 }
-                row(2, IndexLabel.DATASET_PROCESSED) {
-                    cell { colSpan = 2; value = "Terms & Instructions" }
+                trailingRow(2) {
+                    //cell { value = "Terms & Instructions" }
                 }
             }
         }

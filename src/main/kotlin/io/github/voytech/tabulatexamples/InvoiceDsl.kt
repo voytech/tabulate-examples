@@ -3,6 +3,7 @@ package io.github.voytech.tabulatexamples
 import io.github.voytech.tabulate.api.builder.dsl.RowsBuilderApi
 import io.github.voytech.tabulate.api.builder.dsl.cell
 import io.github.voytech.tabulate.api.builder.dsl.footer
+import io.github.voytech.tabulate.api.builder.dsl.trailingRow
 import io.github.voytech.tabulate.model.CellType
 import io.github.voytech.tabulate.model.attributes.cell.*
 import io.github.voytech.tabulate.model.attributes.cell.enums.DefaultBorderStyle
@@ -10,7 +11,6 @@ import io.github.voytech.tabulate.model.attributes.cell.enums.DefaultCellFill
 import io.github.voytech.tabulate.model.attributes.cell.enums.DefaultHorizontalAlignment
 import io.github.voytech.tabulate.model.attributes.cell.enums.DefaultWeightStyle
 import io.github.voytech.tabulate.model.attributes.row.height
-import io.github.voytech.tabulate.template.context.IndexLabel
 import io.github.voytech.tabulate.template.tabulate
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -157,28 +157,33 @@ class InvoiceSummaryRowsBuilder {
 }
 
 //TODO section styles (section borders)
-fun RowsBuilderApi<InvoiceLineItem>.invoiceSummaryRow(block: InvoiceSummaryRowsBuilder.() -> Unit) {
+fun RowsBuilderApi<InvoiceLineItem>.invoiceSummaryRow(trailingRowIndex: Int = 0, block: InvoiceSummaryRowsBuilder.() -> Unit) {
     with(InvoiceSummaryRowsBuilder().apply(block)) {
-        row(0,IndexLabel.DATASET_PROCESSED) {
-            emptyCell(colSpan = 3)
-            textCell { "Subtotal" } // TODO! addressing cells by index!
-            decimalCell { subtotal }
+        trailingRow(trailingRowIndex) {
+            textCell(3) { "Subtotal" } // TODO! addressing cells by index!
+            decimalCell(4) { subtotal }
         }
-        row(1,IndexLabel.DATASET_PROCESSED) {
-            emptyCell(colSpan = 3)
-            textCell { "Discounts" }
-            decimalCell { discounts }
+        trailingRow {
+            textCell(3) { "Discounts" }
+            decimalCell(4) { discounts }
         }
-        row(2,IndexLabel.DATASET_PROCESSED) {
-            emptyCell(colSpan = 3)
-            textCell { "Taxes" }
-            decimalCell { taxes }
+        trailingRow {
+            textCell(3) { "Taxes" }
+            decimalCell(4) { taxes }
         }
-        row(3,IndexLabel.DATASET_PROCESSED) {
-            emptyCell(colSpan = 3)
-            textCell { "Total" }
-            decimalCell { total }
+        trailingRow {
+            textCell(3) { "Total" }
+            decimalCell(4) { total }
         }
+    }
+}
+
+fun RowsBuilderApi<InvoiceLineItem>.invoiceTermsAndInstructions(trailingRowIndex: Int = 0) {
+    trailingRow(trailingRowIndex) {
+        textCell(0) { "Thank You for your business!" }
+    }
+    trailingRow {
+        textCell(0) { "Terms & Instructions" }
     }
 }
 
@@ -215,19 +220,14 @@ fun Iterable<InvoiceLineItem>.printInvoice(
             }
             separatorRow()
             invoiceItemsHeaderRow()
-            footer {  }
-            invoiceSummaryRow {
+            // footer {  } // TODO : BUG - when I skip footer which is 0 index trailing row - rendering of remaining rows stops as there is a gap when next trailing row starts at 1.
+            invoiceSummaryRow{
                 subtotal = items.sumOf { it.unitPrice.multiply(it.qty.toBigDecimal()) }
                 discounts = BigDecimal.ZERO
                 taxes = items.sumOf { it.vat.multiply(it.unitPrice.multiply(it.qty.toBigDecimal())) }
                 total = items.sumOf { it.total }
             }
-            row(4, IndexLabel.DATASET_PROCESSED) {
-                textCell { "Thank You for your business!" }
-            }
-            row(5, IndexLabel.DATASET_PROCESSED) {
-                textCell { "Terms & Instructions" }
-            }
+            invoiceTermsAndInstructions()
         }
     }
 }

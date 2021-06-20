@@ -2,6 +2,7 @@ package io.github.voytech.tabulatexamples
 
 import io.github.voytech.tabulate.api.builder.dsl.cell
 import io.github.voytech.tabulate.api.builder.dsl.footer
+import io.github.voytech.tabulate.api.builder.dsl.trailingRow
 import io.github.voytech.tabulate.excel.model.attributes.dataFormat
 import io.github.voytech.tabulate.model.CellType
 import io.github.voytech.tabulate.model.attributes.cell.*
@@ -240,13 +241,13 @@ object InvoiceWithStyles{
                     }
                 }
                 footer { }
-                row(1, IndexLabel.DATASET_PROCESSED) {
+                trailingRow(1) {
                     cell {
                         colSpan = 2
                         value = "Thank You for your business!"
                     }
                 }
-                row(2, IndexLabel.DATASET_PROCESSED) {
+                trailingRow(2) {
                     cell {
                         colSpan = 2
                         value = "Terms & Instructions"

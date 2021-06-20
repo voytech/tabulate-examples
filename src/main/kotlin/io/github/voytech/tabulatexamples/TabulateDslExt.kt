@@ -22,6 +22,7 @@ fun <T> RowsBuilderApi<T>.separatorRow(height: Int? = null) {
         }
     }
 }
+
 fun <T> RowsBuilderApi<T>.separatorRows(count: Int = 1) {
     (1..count).forEach { _ -> separatorRow() }
 }
@@ -38,34 +39,39 @@ fun <T> RowBuilderApi<T>.emptyCell(colSpan: Int = 1) {
     cells { emptyCell(colSpan) }
 }
 
-fun <T> RowBuilderApi<T>.textCell(colSpan: Int = 1,rowSpan: Int = 1,valueSupplier: () -> String) {
-    cell {
-        this.colSpan = colSpan
-        this.rowSpan = rowSpan
-        value = valueSupplier()
-        type = CellType.STRING
-    }
+private fun <T, R> cellBuilderBlock(
+    cSpan: Int = 1,
+    rSpan: Int = 1,
+    cType: CellType,
+    valueSupplier: () -> R
+): CellBuilderApi<T>.() -> Unit = {
+    colSpan = cSpan
+    rowSpan = rSpan
+    value = valueSupplier()
+    type = cType
 }
 
-fun <T> RowBuilderApi<T>.decimalCell(colSpan: Int = 1,rowSpan: Int = 1,valueSupplier: () -> BigDecimal) {
-    cell {
-        this.colSpan = colSpan
-        this.rowSpan = rowSpan
-        value = valueSupplier()
-        type = CellType.NUMERIC
-    }
+fun <T> RowBuilderApi<T>.textCell(index: Int? = null, colSpan: Int = 1, rowSpan: Int = 1, valueSupplier: () -> String) {
+    val block = cellBuilderBlock<T,String>(colSpan, rowSpan, CellType.STRING, valueSupplier)
+    index?.let { cell(it, block) } ?: cell(block)
+}
+
+fun <T> RowBuilderApi<T>.decimalCell(
+    index: Int? = null,
+    colSpan: Int = 1,
+    rowSpan: Int = 1,
+    valueSupplier: () -> BigDecimal,
+) {
+    val block = cellBuilderBlock<T,BigDecimal>(colSpan, rowSpan, CellType.NUMERIC, valueSupplier)
+    index?.let { cell(it, block) } ?: cell(block)
 }
 
 
-fun <T> RowBuilderApi<T>.dateCell(dateFormat: String = "yyyy-mm-dd",supplier: () -> LocalDate) {
-    cells {
-        cell {
-            value = supplier()
-            attributes {
-                dataFormat { value = dateFormat }
-            }
-        }
-    }
+fun <T> RowBuilderApi<T>.dateCell(index: Int? = null, dateFormat: String = "yyyy-mm-dd", supplier: () -> LocalDate) {
+    val block = cellBuilderBlock<T, LocalDate>(1,1, CellType.DATE, supplier)
+    index?.let {
+        cell(it, block.also { attributes {  dataFormat { value = dateFormat }  } }) } ?:
+        cell(block.also { attributes {  dataFormat { value = dateFormat }  }  })
 }
 
 fun <T> RowsBuilderApi<T>.oneCellRow(block: CellBuilderApi<T>.() -> Unit) {
