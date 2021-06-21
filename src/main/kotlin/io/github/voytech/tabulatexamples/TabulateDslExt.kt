@@ -66,7 +66,6 @@ fun <T> RowBuilderApi<T>.decimalCell(
     index?.let { cell(it, block) } ?: cell(block)
 }
 
-
 fun <T> RowBuilderApi<T>.dateCell(index: Int? = null, dateFormat: String = "yyyy-mm-dd", supplier: () -> LocalDate) {
     val block = cellBuilderBlock<T, LocalDate>(1,1, CellType.DATE, supplier)
     index?.let {

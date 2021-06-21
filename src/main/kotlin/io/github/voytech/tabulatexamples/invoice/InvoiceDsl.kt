@@ -157,33 +157,37 @@ class InvoiceSummaryRowsBuilder {
 }
 
 //TODO section styles (section borders)
-fun RowsBuilderApi<InvoiceLineItem>.invoiceSummaryRow(trailingRowIndex: Int = 0, block: InvoiceSummaryRowsBuilder.() -> Unit) {
+fun RowsBuilderApi<InvoiceLineItem>.invoiceSummaryRow(
+    trailingRowStartIndex: Int = 0,
+    firstColumnIndex: Int = 3,
+    block: InvoiceSummaryRowsBuilder.() -> Unit
+) {
     with(InvoiceSummaryRowsBuilder().apply(block)) {
-        trailingRow(trailingRowIndex) {
-            textCell(3) { "Subtotal" } // TODO! addressing cells by index!
-            decimalCell(4) { subtotal }
+        trailingRow(trailingRowStartIndex) {
+            textCell(firstColumnIndex) { "Subtotal" }
+            decimalCell { subtotal }
         }
         trailingRow {
-            textCell(3) { "Discounts" }
-            decimalCell(4) { discounts }
+            textCell(firstColumnIndex) { "Discounts" }
+            decimalCell { discounts }
         }
         trailingRow {
-            textCell(3) { "Taxes" }
-            decimalCell(4) { taxes }
+            textCell(firstColumnIndex) { "Taxes" }
+            decimalCell { taxes }
         }
         trailingRow {
-            textCell(3) { "Total" }
-            decimalCell(4) { total }
+            textCell(firstColumnIndex) { "Total" }
+            decimalCell { total }
         }
     }
 }
 
-fun RowsBuilderApi<InvoiceLineItem>.invoiceTermsAndInstructions(trailingRowIndex: Int = 0) {
+fun RowsBuilderApi<InvoiceLineItem>.invoiceTermsAndInstructions(trailingRowIndex: Int = 0, firstColumnIndex: Int = 0) {
     trailingRow(trailingRowIndex) {
-        textCell(0) { "Thank You for your business!" }
+        textCell(firstColumnIndex) { "Thank You for your business!" }
     }
     trailingRow {
-        textCell(0) { "Terms & Instructions" }
+        textCell(firstColumnIndex) { "Terms & Instructions" }
     }
 }
 
