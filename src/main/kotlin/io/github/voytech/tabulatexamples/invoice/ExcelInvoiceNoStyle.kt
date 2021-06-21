@@ -1,13 +1,12 @@
 @file:Suppress("DuplicatedCode")
 
-package io.github.voytech.tabulatexamples
+package io.github.voytech.tabulatexamples.invoice
 
 import io.github.voytech.tabulate.api.builder.dsl.cell
 import io.github.voytech.tabulate.api.builder.dsl.footer
 import io.github.voytech.tabulate.api.builder.dsl.trailingRow
 import io.github.voytech.tabulate.excel.model.attributes.dataFormat
 import io.github.voytech.tabulate.model.attributes.row.height
-import io.github.voytech.tabulate.template.context.IndexLabel
 import io.github.voytech.tabulate.template.tabulate
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -107,10 +106,10 @@ object InvoiceWithoutStyle {
                 }
                 footer { }
                 trailingRow(1) {
-                    //cell { value = "Thank You for your business!" }
+                    cell { value = "Thank You for your business!" }
                 }
                 trailingRow(2) {
-                    //cell { value = "Terms & Instructions" }
+                    cell { value = "Terms & Instructions" }
                 }
             }
         }

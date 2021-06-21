@@ -1,8 +1,7 @@
-package io.github.voytech.tabulatexamples
+package io.github.voytech.tabulatexamples.invoice
 
 import io.github.voytech.tabulate.api.builder.dsl.RowsBuilderApi
 import io.github.voytech.tabulate.api.builder.dsl.cell
-import io.github.voytech.tabulate.api.builder.dsl.footer
 import io.github.voytech.tabulate.api.builder.dsl.trailingRow
 import io.github.voytech.tabulate.model.CellType
 import io.github.voytech.tabulate.model.attributes.cell.*
@@ -12,6 +11,7 @@ import io.github.voytech.tabulate.model.attributes.cell.enums.DefaultHorizontalA
 import io.github.voytech.tabulate.model.attributes.cell.enums.DefaultWeightStyle
 import io.github.voytech.tabulate.model.attributes.row.height
 import io.github.voytech.tabulate.template.tabulate
+import io.github.voytech.tabulatexamples.*
 import java.math.BigDecimal
 import java.time.LocalDate
 
@@ -221,7 +221,7 @@ fun Iterable<InvoiceLineItem>.printInvoice(
             separatorRow()
             invoiceItemsHeaderRow()
             // footer {  } // TODO : BUG - when I skip footer which is 0 index trailing row - rendering of remaining rows stops as there is a gap when next trailing row starts at 1.
-            invoiceSummaryRow{
+            invoiceSummaryRow {
                 subtotal = items.sumOf { it.unitPrice.multiply(it.qty.toBigDecimal()) }
                 discounts = BigDecimal.ZERO
                 taxes = items.sumOf { it.vat.multiply(it.unitPrice.multiply(it.qty.toBigDecimal())) }

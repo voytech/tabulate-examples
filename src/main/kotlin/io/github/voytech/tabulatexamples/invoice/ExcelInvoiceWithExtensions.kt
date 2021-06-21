@@ -1,4 +1,4 @@
-package io.github.voytech.tabulatexamples
+package io.github.voytech.tabulatexamples.invoice
 
 import java.math.BigDecimal
 import java.time.LocalDate
