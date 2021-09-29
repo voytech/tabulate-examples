@@ -2,7 +2,6 @@
 
 package io.github.voytech.tabulatexamples.invoice
 
-import io.github.voytech.tabulate.api.builder.dsl.cell
 import io.github.voytech.tabulate.api.builder.dsl.footer
 import io.github.voytech.tabulate.api.builder.dsl.trailingRow
 import io.github.voytech.tabulate.excel.model.attributes.dataFormat

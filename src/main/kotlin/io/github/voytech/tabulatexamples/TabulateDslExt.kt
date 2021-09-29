@@ -112,18 +112,18 @@ class CellAllBordersAttribute {
     var color: Color = Colors.BLACK
 }
 
-private fun buildAllBorders(block: CellAllBordersAttribute.() -> Unit): CellBordersAttribute {
+private fun buildAllBorders(block: CellAllBordersAttribute.() -> Unit): CellBordersAttribute.Builder {
     return CellAllBordersAttribute().apply(block).let {
-        CellBordersAttribute(
-            leftBorderStyle = it.style,
-            leftBorderColor = it.color,
-            rightBorderColor = it.color,
-            rightBorderStyle = it.style,
-            topBorderColor = it.color,
-            topBorderStyle = it.style,
-            bottomBorderColor = it.color,
+        CellBordersAttribute.Builder().apply {
+            leftBorderStyle = it.style
+            leftBorderColor = it.color
+            rightBorderColor = it.color
+            rightBorderStyle = it.style
+            topBorderColor = it.color
+            topBorderStyle = it.style
+            bottomBorderColor = it.color
             bottomBorderStyle = it.style
-        )
+        }
     }
 }
 
