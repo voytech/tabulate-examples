@@ -23,7 +23,6 @@ dependencies {
     implementation(platform("io.github.voytech:tabulate-bom:$tabulateVersion"))
     implementation("io.github.voytech","tabulate-core")
     implementation("io.github.voytech","tabulate-excel")
-    implementation("io.github.voytech","tabulate-reactor")
     implementation("io.projectreactor:reactor-core:3.4.6")
 }
 

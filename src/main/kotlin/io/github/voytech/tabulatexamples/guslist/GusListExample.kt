@@ -2,6 +2,7 @@
 
 package io.github.voytech.tabulatexamples.guslist
 
+import io.github.voytech.tabulate.api.builder.dsl.CustomTable
 import io.github.voytech.tabulate.api.builder.dsl.header
 import io.github.voytech.tabulate.model.attributes.cell.Colors
 import io.github.voytech.tabulate.model.attributes.cell.background
@@ -103,5 +104,5 @@ fun main() {
         }
     }
 
-   listForGus.tabulate("address_list_static_definition.xlsx",TableDefinitions.addressTable + { name = "Dealers address list"})
+   listForGus.tabulate("address_list_static_definition.xlsx", CustomTable { name = "Dealers address list"} + TableDefinitions.addressTable)
 }

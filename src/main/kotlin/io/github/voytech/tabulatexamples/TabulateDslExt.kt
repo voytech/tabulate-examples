@@ -2,19 +2,15 @@ package io.github.voytech.tabulatexamples
 
 import io.github.voytech.tabulate.api.builder.dsl.*
 import io.github.voytech.tabulate.excel.model.attributes.dataFormat
-import io.github.voytech.tabulate.model.CellType
 import io.github.voytech.tabulate.model.attributes.cell.*
-import io.github.voytech.tabulate.model.attributes.cell.enums.DefaultBorderStyle
-import io.github.voytech.tabulate.model.attributes.cell.enums.DefaultHorizontalAlignment
-import io.github.voytech.tabulate.model.attributes.cell.enums.DefaultVerticalAlignment
-import io.github.voytech.tabulate.model.attributes.cell.enums.DefaultWeightStyle
+import io.github.voytech.tabulate.model.attributes.cell.enums.*
+import io.github.voytech.tabulate.model.attributes.cell.enums.contract.CellType
 import io.github.voytech.tabulate.model.attributes.row.height
 import java.math.BigDecimal
 import java.time.LocalDate
 
-
 fun <T> RowsBuilderApi<T>.separatorRow(height: Int? = null) {
-    row {
+    newRow {
         height?.let {
             attributes {
                 height { px = it }
@@ -48,11 +44,11 @@ private fun <T, R> cellBuilderBlock(
     colSpan = cSpan
     rowSpan = rSpan
     value = valueSupplier()
-    type = cType
+    typeHint { cType }
 }
 
 fun <T> RowBuilderApi<T>.textCell(index: Int? = null, colSpan: Int = 1, rowSpan: Int = 1, valueSupplier: () -> String) {
-    val block = cellBuilderBlock<T,String>(colSpan, rowSpan, CellType.STRING, valueSupplier)
+    val block = cellBuilderBlock<T,String>(colSpan, rowSpan, DefaultTypeHints.STRING, valueSupplier)
     index?.let { cell(it, block) } ?: cell(block)
 }
 
@@ -62,19 +58,19 @@ fun <T> RowBuilderApi<T>.decimalCell(
     rowSpan: Int = 1,
     valueSupplier: () -> BigDecimal,
 ) {
-    val block = cellBuilderBlock<T,BigDecimal>(colSpan, rowSpan, CellType.NUMERIC, valueSupplier)
+    val block = cellBuilderBlock<T,BigDecimal>(colSpan, rowSpan, DefaultTypeHints.NUMERIC, valueSupplier)
     index?.let { cell(it, block) } ?: cell(block)
 }
 
 fun <T> RowBuilderApi<T>.dateCell(index: Int? = null, dateFormat: String = "yyyy-mm-dd", supplier: () -> LocalDate) {
-    val block = cellBuilderBlock<T, LocalDate>(1,1, CellType.DATE, supplier)
+    val block = cellBuilderBlock<T, LocalDate>(1,1, DefaultTypeHints.DATE, supplier)
     index?.let {
         cell(it, block.also { attributes {  dataFormat { value = dateFormat }  } }) } ?:
         cell(block.also { attributes {  dataFormat { value = dateFormat }  }  })
 }
 
 fun <T> RowsBuilderApi<T>.oneCellRow(block: CellBuilderApi<T>.() -> Unit) {
-    row {
+    newRow {
         cell(block)
     }
 }

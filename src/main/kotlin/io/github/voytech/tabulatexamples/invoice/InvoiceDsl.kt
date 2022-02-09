@@ -1,79 +1,23 @@
 package io.github.voytech.tabulatexamples.invoice
 
 import io.github.voytech.tabulate.api.builder.dsl.RowsBuilderApi
-import io.github.voytech.tabulate.api.builder.dsl.trailingRow
-import io.github.voytech.tabulate.model.CellType
+import io.github.voytech.tabulate.api.builder.dsl.newTrailingRow
 import io.github.voytech.tabulate.model.attributes.cell.*
 import io.github.voytech.tabulate.model.attributes.cell.enums.DefaultBorderStyle
 import io.github.voytech.tabulate.model.attributes.cell.enums.DefaultCellFill
 import io.github.voytech.tabulate.model.attributes.cell.enums.DefaultHorizontalAlignment
 import io.github.voytech.tabulate.model.attributes.cell.enums.DefaultWeightStyle
-import io.github.voytech.tabulate.model.attributes.row.height
+import io.github.voytech.tabulate.model.attributes.column.columnWidth
 import io.github.voytech.tabulate.template.tabulate
 import io.github.voytech.tabulatexamples.*
+import io.github.voytech.tabulatexamples.invoice.sections.issuerSection
+import io.github.voytech.tabulatexamples.invoice.sections.shippingDetailsSection
+import io.github.voytech.tabulatexamples.invoice.sections.titleSection
 import java.math.BigDecimal
 import java.time.LocalDate
 
-
-fun RowsBuilderApi<InvoiceLineItem>.invoiceHeaderRow() {
-    val invoiceLabel = "INVOICE"
-    row {
-        attributes { height { px = 160 } }
-        cell {
-            colSpan = 5
-            value = invoiceLabel
-            boldText()
-            horizontallyAligned(align = DefaultHorizontalAlignment.CENTER)
-        }
-    }
-}
-
-class CompanyHeaderRowBuilder {
-    lateinit var imageUrl: String
-    lateinit var issuer: CompanyAddress
-}
-
-fun RowsBuilderApi<InvoiceLineItem>.companyHeaderRows(block: CompanyHeaderRowBuilder.() -> Unit) {
-    with(CompanyHeaderRowBuilder().apply(block)) {
-        row {
-            textCell(colSpan = 3) { issuer.companyName }
-            cell {
-                colSpan = 2
-                rowSpan = 8
-                value = imageUrl
-                type = CellType.IMAGE_URL
-                attributes {
-                    allBorders {
-                        color = Colors.BLACK
-                        style = DefaultBorderStyle.DOUBLE
-                    }
-                }
-            }
-        }
-        row {
-            textCell(colSpan = 3) { issuer.address }
-        }
-        row {
-            textCell(colSpan = 3) { issuer.address2 }
-        }
-        row {
-            textCell(colSpan = 3) { issuer.phone }
-        }
-        separatorRows(4)
-        /* - TODO does not work
-        row {
-            cell {
-                value = ""
-                rowSpan = 4
-                colSpan = 3
-            }
-        }
-         */
-    }
-}
-
 fun RowsBuilderApi<InvoiceLineItem>.invoiceItemsHeaderRow() {
-    row {
+    newRow {
         textCell { "DESCRIPTION" }
         textCell { "QTY" }
         textCell { "UNIT PRICE" }
@@ -105,7 +49,7 @@ class InvoiceDetailsRowsBuilder {
 
 fun RowsBuilderApi<InvoiceLineItem>.invoiceShippingDetailsRow(block: InvoiceDetailsRowsBuilder.() -> Unit) {
     with(InvoiceDetailsRowsBuilder().apply(block)) {
-        row {
+        newRow {
             textCell { "BILL TO" }
             textCell { "SHIP TO" }
             emptyCell()
@@ -119,29 +63,28 @@ fun RowsBuilderApi<InvoiceLineItem>.invoiceShippingDetailsRow(block: InvoiceDeta
                 }
             }
         }
-        row {
-            matching { it.hasRecord() }
+        matching { records() } assign {
             cell { attributes { text { weight = DefaultWeightStyle.BOLD }} }
         }
-        row {
+        newRow {
             textCell { issuer.companyName }
             textCell { client.companyName }
             emptyCell()
             textCell { "Invoice Date:"}
             dateCell{ issueDate }
         }
-        row {
+        newRow {
             textCell { issuer.contactName }
             textCell { client.contactName }
             emptyCell()
             textCell { "Due Date:"}
             dateCell{ dueDate }
         }
-        row {
+        newRow {
             textCell { issuer.address }
             textCell { client.address }
         }
-        row {
+        newRow {
             textCell { issuer.phone }
             textCell { client.phone }
         }
@@ -162,19 +105,19 @@ fun RowsBuilderApi<InvoiceLineItem>.invoiceSummaryRow(
     block: InvoiceSummaryRowsBuilder.() -> Unit
 ) {
     with(InvoiceSummaryRowsBuilder().apply(block)) {
-        trailingRow(trailingRowStartIndex) {
+        newTrailingRow(trailingRowStartIndex) {
             textCell(firstColumnIndex) { "Subtotal" }
             decimalCell { subtotal }
         }
-        trailingRow {
+        newTrailingRow {
             textCell(firstColumnIndex) { "Discounts" }
             decimalCell { discounts }
         }
-        trailingRow {
+        newTrailingRow {
             textCell(firstColumnIndex) { "Taxes" }
             decimalCell { taxes }
         }
-        trailingRow {
+        newTrailingRow {
             textCell(firstColumnIndex) { "Total" }
             decimalCell { total }
         }
@@ -182,24 +125,25 @@ fun RowsBuilderApi<InvoiceLineItem>.invoiceSummaryRow(
 }
 
 fun RowsBuilderApi<InvoiceLineItem>.invoiceTermsAndInstructions(trailingRowIndex: Int = 0, firstColumnIndex: Int = 0) {
-    trailingRow(trailingRowIndex) {
+    newTrailingRow(trailingRowIndex) {
         textCell(firstColumnIndex) { "Thank You for your business!" }
     }
-    trailingRow {
+    newTrailingRow {
         textCell(firstColumnIndex) { "Terms & Instructions" }
     }
 }
 
 fun Iterable<InvoiceLineItem>.printInvoice(
     fileName: String,
-    issuer: CompanyAddress,
-    client: CompanyAddress,
+    issuerDetails: CompanyAddress,
+    clientDetails: CompanyAddress,
     invoiceNumber: String = "#00001",
     issueDate: LocalDate = LocalDate.now(),
     dueDate: LocalDate = LocalDate.now(),
 ) {
     val items = this
     tabulate(fileName) {
+        attributes { columnWidth { auto = true } }
         columns {
             column(InvoiceLineItem::description)
             column(InvoiceLineItem::qty)
@@ -208,19 +152,32 @@ fun Iterable<InvoiceLineItem>.printInvoice(
             column(InvoiceLineItem::total)
         }
         rows {
-            invoiceHeaderRow()
-            companyHeaderRows {
-                this.issuer = issuer
+            titleSection()
+            issuerSection {
+                rowIndex = 1
+                issuer = issuerDetails
                 imageUrl = "src/main/resources/logo.png"
             }
             separatorRow()
-            invoiceShippingDetailsRow {
+            shippingDetailsSection {
+                addressTitle = "BILL TO"
+                rowIndex = 10
+                columnIndex = 0
+                address = issuerDetails
+            }
+            shippingDetailsSection {
+                addressTitle = "SHIP TO"
+                rowIndex = 10
+                columnIndex = 1
+                address = clientDetails
+            }
+            /*invoiceShippingDetailsRow {
                 this.invoiceNumber = invoiceNumber
-                this.issuer = issuer
-                this.client = client
+                this.issuer = issuerDetails
+                this.client = clientDetails
                 this.issueDate = issueDate
                 this.dueDate = dueDate
-            }
+            }*/
             separatorRow()
             invoiceItemsHeaderRow()
             // footer {  } // TODO : BUG - when I skip footer which is 0 index trailing row - rendering of remaining rows stops as there is a gap when next trailing row starts at 1.

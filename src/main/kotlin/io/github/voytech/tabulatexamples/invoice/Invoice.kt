@@ -20,14 +20,14 @@ fun main(args: Array<String>) {
         invoiceNumber = "#00001",
         issueDate = LocalDate.now(),
         dueDate = LocalDate.now(),
-        issuer =  CompanyAddress(
+        issuerDetails =  CompanyAddress(
             contactName = "Joseph Lunar",
             companyName = "Always Good Computers",
             address = "Albatross St. 1/22",
             address2 = "joslun@gmail.com",
             phone = "988-324-342"
         ),
-        client = CompanyAddress(
+        clientDetails = CompanyAddress(
             contactName = "Jeremy Corpse",
             companyName = "JerCo.",
             address = "Genuine St. 22/22",
