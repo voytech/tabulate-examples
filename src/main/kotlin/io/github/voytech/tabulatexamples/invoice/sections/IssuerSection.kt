@@ -24,24 +24,15 @@ fun RowsBuilderApi<InvoiceLineItem>.issuerSection(block: IssuerRowBuilder.() -> 
                 typeHint { DefaultTypeHints.IMAGE_URL }
             }
         }
-        newRow {
+        newRow(rowIndex+1) {
             textCell(colSpan = 3) { issuer.address }
         }
-        newRow {
+        newRow(rowIndex+2) {
             textCell(colSpan = 3) { issuer.address2 }
         }
-        newRow {
+        newRow(rowIndex+3) {
             textCell(colSpan = 3) { issuer.phone }
         }
-        separatorRows(4)
-        /* - TODO does not work
-        row {
-            cell {
-                value = ""
-                rowSpan = 4
-                colSpan = 3
-            }
-        }
-         */
+        separatorRows(rowIndex + 4,4)
     }
 }

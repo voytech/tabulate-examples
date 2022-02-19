@@ -6,21 +6,26 @@ import io.github.voytech.tabulate.model.attributes.cell.*
 import io.github.voytech.tabulate.model.attributes.cell.enums.*
 import io.github.voytech.tabulate.model.attributes.cell.enums.contract.CellType
 import io.github.voytech.tabulate.model.attributes.row.height
+import io.github.voytech.tabulatexamples.invoice.InvoiceLineItem
+import io.github.voytech.tabulatexamples.invoice.sections.IssuerRowBuilder
 import java.math.BigDecimal
 import java.time.LocalDate
 
-fun <T> RowsBuilderApi<T>.separatorRow(height: Int? = null) {
-    newRow {
+fun <T> RowsBuilderApi<T>.separatorRow(height: Int? = null, rowIndex: Int? = null) {
+    val block: (RowBuilderApi<T>.() -> Unit) = {
         height?.let {
             attributes {
                 height { px = it }
             }
         }
     }
+    rowIndex?.let {
+        newRow(it,block)
+    } ?: newRow(block)
 }
 
-fun <T> RowsBuilderApi<T>.separatorRows(count: Int = 1) {
-    (1..count).forEach { _ -> separatorRow() }
+fun <T> RowsBuilderApi<T>.separatorRows(rowIndex: Int,count: Int = 1) {
+    (1..count).forEachIndexed { index, _ ->  separatorRow(rowIndex=rowIndex + index) }
 }
 
 

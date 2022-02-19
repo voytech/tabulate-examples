@@ -18,8 +18,8 @@ fun main(args: Array<String>) {
     ).printInvoice(
         fileName = "invoice.xlsx",
         invoiceNumber = "#00001",
-        issueDate = LocalDate.now(),
-        dueDate = LocalDate.now(),
+        invoiceIssueDate = LocalDate.now(),
+        invoiceDueDate = LocalDate.now(),
         issuerDetails =  CompanyAddress(
             contactName = "Joseph Lunar",
             companyName = "Always Good Computers",

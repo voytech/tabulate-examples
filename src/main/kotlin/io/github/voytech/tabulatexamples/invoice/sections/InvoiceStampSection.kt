@@ -6,21 +6,24 @@ import io.github.voytech.tabulate.model.attributes.cell.alignment
 import io.github.voytech.tabulate.model.attributes.cell.borders
 import io.github.voytech.tabulate.model.attributes.cell.enums.DefaultBorderStyle
 import io.github.voytech.tabulate.model.attributes.cell.enums.DefaultHorizontalAlignment
+import io.github.voytech.tabulatexamples.dateCell
 import io.github.voytech.tabulatexamples.invoice.CompanyAddress
 import io.github.voytech.tabulatexamples.invoice.InvoiceLineItem
 import io.github.voytech.tabulatexamples.textCell
+import java.time.LocalDate
 
-class ShippingRowsBuilder {
+class InvoiceStampBuilder {
     var rowIndex: Int = 0
     var columnIndex: Int = 0
-    lateinit var addressTitle: String
-    lateinit var address: CompanyAddress
+    lateinit var number: String
+    lateinit var dueDate: LocalDate
+    lateinit var issueDate: LocalDate
 }
 
-fun RowsBuilderApi<InvoiceLineItem>.shippingDetailsSection(block: ShippingRowsBuilder.() -> Unit) {
-    ShippingRowsBuilder().apply(block).let {
+fun RowsBuilderApi<InvoiceLineItem>.invoiceStampSection(block: InvoiceStampBuilder.() -> Unit) {
+    InvoiceStampBuilder().apply(block).let {
         newRow(it.rowIndex) {
-            textCell(index = it.columnIndex) { it.addressTitle }
+            textCell(index = it.columnIndex) { "Invoice:" }
             attributes {
                 alignment { horizontal = DefaultHorizontalAlignment.CENTER }
                 borders {
@@ -30,16 +33,13 @@ fun RowsBuilderApi<InvoiceLineItem>.shippingDetailsSection(block: ShippingRowsBu
             }
         }
         newRow(it.rowIndex + 1) {
-            textCell(index = it.columnIndex) { it.address.companyName }
+            textCell(index = it.columnIndex) { it.number }
         }
         newRow(it.rowIndex + 2) {
-            textCell(index = it.columnIndex) { it.address.contactName }
+            textCell(index = it.columnIndex) { it.issueDate.toString() }
         }
         newRow(it.rowIndex + 3) {
-            textCell(index = it.columnIndex) { it.address.address }
-        }
-        newRow(it.rowIndex + 4) {
-            textCell(index = it.columnIndex) { it.address.phone }
+            dateCell(index = it.columnIndex) { it.dueDate }
         }
     }
 }
