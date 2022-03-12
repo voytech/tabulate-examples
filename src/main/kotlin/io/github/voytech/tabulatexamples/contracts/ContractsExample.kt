@@ -2,13 +2,15 @@
 
 package io.github.voytech.tabulatexamples.contracts
 
-import io.github.voytech.tabulate.api.builder.dsl.*
+import io.github.voytech.tabulate.api.builder.dsl.Table
+import io.github.voytech.tabulate.api.builder.dsl.header
+import io.github.voytech.tabulate.api.builder.dsl.with
 import io.github.voytech.tabulate.model.attributes.cell.Colors
 import io.github.voytech.tabulate.model.attributes.cell.background
-import io.github.voytech.tabulate.model.attributes.cell.enums.DefaultCellFill
 import io.github.voytech.tabulate.model.attributes.cell.text
 import io.github.voytech.tabulate.model.attributes.column.columnWidth
 import io.github.voytech.tabulate.template.tabulate
+import java.awt.SystemColor.text
 import java.math.BigDecimal
 import java.time.LocalDate
 
@@ -30,9 +32,17 @@ object TableDefinitions {
             column(Contract::monthlyGrossValue)
         }
         rows {
-            matching { header() }
             header {
-                columnTitles("Client", "Code", "Contract Length", "Date Signed", "Expiration Date", "First Payment", "Last Payment","Monthly Gross Value")
+                columnTitles(
+                    "Client",
+                    "Code",
+                    "Contract Length",
+                    "Date Signed",
+                    "Expiration Date",
+                    "First Payment",
+                    "Last Payment",
+                    "Monthly Gross Value"
+                )
                 attributes {
                     text { fontColor = Colors.WHITE }
                     background {
@@ -87,7 +97,16 @@ fun main() {
         }
         rows {
             header {
-                columnTitles("Client", "Code", "Contract Length", "Date Signed", "Expiration Date", "First Payment", "Last Payment","Monthly Gross Value")
+                columnTitles(
+                    "Client",
+                    "Code",
+                    "Contract Length",
+                    "Date Signed",
+                    "Expiration Date",
+                    "First Payment",
+                    "Last Payment",
+                    "Monthly Gross Value"
+                )
                 attributes {
                     text { fontColor = Colors.WHITE }
                     background {
@@ -97,7 +116,6 @@ fun main() {
             }
         }
     }
+    contracts.tabulate("past_contracts.xlsx", TableDefinitions.contractsTable with Table { name = "Past contracts" })
 
-
-   contracts.tabulate("past_contracts.xlsx", TableDefinitions.contractsTable with Table { name = "Past contracts"})
 }
