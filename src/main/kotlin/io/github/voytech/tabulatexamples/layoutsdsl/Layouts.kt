@@ -1,50 +1,134 @@
 package io.github.voytech.tabulatexamples.layoutsdsl
 
+import io.github.voytech.tabulate.api.builder.dsl.CellBuilderApi
 import io.github.voytech.tabulate.api.builder.dsl.RowBuilderApi
 import io.github.voytech.tabulate.api.builder.dsl.RowsBuilderApi
 
-class LayoutRowBuilderApi<T>(private val layoutBuilderApi: LayoutBuilderApi<T>) {
-
+class SectionCellBuilderApi<T>(
+    private val cursor: LayoutCursor,
+    private val cellBuilderApi: CellBuilderApi<T>
+) {
+    @set:JvmSynthetic
+    @get:JvmSynthetic
+    var value: Any? by cellBuilderApi::value
 }
 
-class LayoutBuilderApi<T>(private val rowsBuilderApi: RowsBuilderApi<T>) {
-    var rowIndex: Int = 0
-    var columnIndex: Int = 0
-    var rowSpan: Int = 1
-    var colSpan: Int = 1
+class SectionRowBuilderApi<T>(
+    private val cursor: LayoutCursor,
+    private val rowBuilderApi: RowBuilderApi<T>
+) {
 
     @JvmSynthetic
-    fun row(block: LayoutRowBuilderApi<T>.() -> Unit) {
-
+    fun cell(block: SectionCellBuilderApi<T>.() -> Unit) {
+        rowBuilderApi.cell(cursor.getAndIncColumn(1)) {
+           SectionCellBuilderApi(cursor,this).apply(block)
+        }
     }
 
 }
 
-fun <T> RowsBuilderApi<T>.layout(block: LayoutBuilderApi<T>.() -> Unit) {
-    LayoutBuilderApi(this).apply(block).let {
+class SectionBuilderApi<T>(
+    private val cursor: LayoutCursor,
+    private val rowsBuilderApi: RowsBuilderApi<T>
+) {
 
+    @JvmSynthetic
+    fun newRow(block: SectionRowBuilderApi<T>.() -> Unit) {
+        rowsBuilderApi.newRow(cursor.getAndIncRow(1)) {
+            SectionRowBuilderApi(cursor,this).apply(block)
+        }.also {
+            cursor.onNewRow()
+        }
     }
+
 }
 
-class HorizontalLayoutBuilderApi<T>(val layoutBuilderApi: LayoutBuilderApi<T>) {
-    var currentRowOffset: Int = 0
-    var currentColumnOffset: Int = 0
+enum class LayoutType {
+    HORIZONTAL,
+    VERTICAL
 }
 
-fun <T> RowsBuilderApi<T>.horizontal(block: SectionBuilder.() -> Unit) {
-    SectionBuilder().apply(block).let {
-
-    }
-}
-
-data class SectionBuilder(
-    var rowIndex : Int = 0,
-    var columnIndex: Int = 0,
+class LayoutCursor {
+    var currentRowIndex: Int = 0
+    var sectionRowIndex: Int = 0
+    var maxRowIndex: Int = 0
     var currentColumnIndex: Int = 0
-)
+    var sectionColumnIndex: Int = 0
+    var maxColumnIndex: Int = 0
+    var layoutType: LayoutType = LayoutType.HORIZONTAL
 
-fun <T> RowsBuilderApi<T>.section(block: SectionBuilder.() -> Unit) {
-    SectionBuilder().apply(block).let {
+    fun getAndIncRow(index: Int = 1): Int {
+        return currentRowIndex.also {
+            currentRowIndex+=index
+            if (currentRowIndex>maxRowIndex) maxRowIndex = currentRowIndex
+        }
+    }
 
+    fun getAndIncColumn(index: Int = 1): Int {
+        return currentColumnIndex.also {
+            currentColumnIndex+=index
+            if (currentColumnIndex>maxColumnIndex) maxColumnIndex = currentColumnIndex
+        }
+    }
+
+    fun onNewRow() {
+        currentColumnIndex = sectionColumnIndex
+    }
+
+    fun closeLayout() {
+        sectionRowIndex = maxRowIndex
+        currentRowIndex = maxRowIndex
+        currentColumnIndex = 0
+        sectionColumnIndex = 0
+        maxColumnIndex = 0
+    }
+
+    fun closeSection() {
+        if (layoutType == LayoutType.HORIZONTAL) {
+            sectionColumnIndex = maxColumnIndex
+        } else {
+            sectionRowIndex = maxRowIndex
+        }
+        currentRowIndex = sectionRowIndex
+        currentColumnIndex = sectionColumnIndex
     }
 }
+
+data class SectionsBuilder<T>(
+    private val cursor: LayoutCursor,
+    private val rowsBuilderApi: RowsBuilderApi<T>
+) {
+    fun section(block: SectionBuilderApi<T>.() -> Unit) {
+        SectionBuilderApi(cursor, rowsBuilderApi).apply(block).also {
+            cursor.closeSection()
+        }
+    }
+}
+
+data class LayoutBuilder<T>(
+    private val cursor: LayoutCursor,
+    private val rowsBuilderApi: RowsBuilderApi<T>
+) {
+    fun vertical(block: SectionsBuilder<T>.() -> Unit) {
+        cursor.layoutType = LayoutType.VERTICAL
+        SectionsBuilder(cursor, rowsBuilderApi).apply(block).also {
+            cursor.closeLayout()
+        }
+    }
+
+    fun horizontal(block: SectionsBuilder<T>.() -> Unit) {
+        cursor.layoutType = LayoutType.HORIZONTAL
+        SectionsBuilder(cursor, rowsBuilderApi).apply(block).also {
+            cursor.closeLayout()
+        }
+    }
+}
+
+fun <T> RowsBuilderApi<T>.layout(block: LayoutBuilder<T>.() -> Unit) {
+    LayoutBuilder(LayoutCursor(),this).apply(block)
+}
+
+
+
+
+
