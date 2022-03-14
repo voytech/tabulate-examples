@@ -14,27 +14,31 @@ import io.github.voytech.tabulatexamples.invoice.sections.invoiceStampSection
 import io.github.voytech.tabulatexamples.invoice.sections.issuerSection
 import io.github.voytech.tabulatexamples.invoice.sections.shippingDetailsSection
 import io.github.voytech.tabulatexamples.invoice.sections.titleSection
+import io.github.voytech.tabulatexamples.layoutsdsl.SectionsBuilder
+import io.github.voytech.tabulatexamples.layoutsdsl.layout
 import java.math.BigDecimal
 import java.time.LocalDate
 
-fun RowsBuilderApi<InvoiceLineItem>.invoiceItemsHeaderRow() {
-    newRow {
-        textCell { "DESCRIPTION" }
-        textCell { "QTY" }
-        textCell { "UNIT PRICE" }
-        textCell { "VAT" }
-        textCell { "TOTAL" }
-        attributes {
-            allBorders {
-                style = DefaultBorderStyle.SOLID
-            }
-            text {
-                fontColor = Colors.WHITE
-                weight = DefaultWeightStyle.BOLD
-            }
-            background {
-                color = Colors.BLACK // add more colors
-                fill = DefaultCellFill.SOLID
+fun SectionsBuilder<InvoiceLineItem>.invoiceItemsHeaderRow() {
+    section {
+        newRow {
+            cell {  value = "DESCRIPTION" }
+            cell {  value = "QTY" }
+            cell {  value = "UNIT PRICE" }
+            cell {  value = "VAT" }
+            cell {  value = "TOTAL" }
+            attributes {
+                allBorders {
+                    style = DefaultBorderStyle.SOLID
+                }
+                text {
+                    fontColor = Colors.WHITE
+                    weight = DefaultWeightStyle.BOLD
+                }
+                background {
+                    color = Colors.BLACK // add more colors
+                    fill = DefaultCellFill.SOLID
+                }
             }
         }
     }
@@ -101,34 +105,33 @@ fun Iterable<InvoiceLineItem>.printInvoice(
             column(InvoiceLineItem::total)
         }
         rows {
-            titleSection()
-            issuerSection {
-                rowIndex = 1
-                issuer = issuerDetails
-                imageUrl = "src/main/resources/logo.png"
+            layout {
+                horizontal { titleSection() }
+                horizontal {
+                    issuerSection {
+                        issuer = issuerDetails
+                        imageUrl = "src/main/resources/logo.png"
+                    }
+                }
+                horizontal {
+                    shippingDetailsSection {
+                        addressTitle = "BILL TO"
+                        address = issuerDetails
+                    }
+                    shippingDetailsSection {
+                        addressTitle = "SHIP TO"
+                        address = clientDetails
+                    }
+                    invoiceStampSection {
+                        number = invoiceNumber
+                        issueDate = invoiceIssueDate
+                        dueDate = invoiceDueDate
+                    }
+                }
+                horizontal {
+                    invoiceItemsHeaderRow()
+                }
             }
-            separatorRow()
-            shippingDetailsSection {
-                addressTitle = "BILL TO"
-                rowIndex = 10
-                columnIndex = 0
-                address = issuerDetails
-            }
-            shippingDetailsSection {
-                addressTitle = "SHIP TO"
-                rowIndex = 10
-                columnIndex = 1
-                address = clientDetails
-            }
-            invoiceStampSection {
-                rowIndex = 10
-                columnIndex = 2
-                number = invoiceNumber
-                issueDate = invoiceIssueDate
-                dueDate = invoiceDueDate
-            }
-            separatorRow(rowIndex = 15)
-            invoiceItemsHeaderRow()
             // footer {  } // TODO : BUG - when I skip footer which is 0 index trailing row - rendering of remaining rows stops as there is a gap when next trailing row starts at 1.
             invoiceSummaryRow {
                 subtotal = items.sumOf { it.unitPrice.multiply(it.qty.toBigDecimal()) }

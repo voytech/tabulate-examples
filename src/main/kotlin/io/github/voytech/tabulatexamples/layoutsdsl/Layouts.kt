@@ -1,8 +1,8 @@
 package io.github.voytech.tabulatexamples.layoutsdsl
 
-import io.github.voytech.tabulate.api.builder.dsl.CellBuilderApi
-import io.github.voytech.tabulate.api.builder.dsl.RowBuilderApi
-import io.github.voytech.tabulate.api.builder.dsl.RowsBuilderApi
+import io.github.voytech.tabulate.api.builder.dsl.*
+import io.github.voytech.tabulate.model.attributes.cell.enums.contract.CellType
+import kotlin.properties.Delegates
 
 class SectionCellBuilderApi<T>(
     private val cursor: LayoutCursor,
@@ -11,6 +11,31 @@ class SectionCellBuilderApi<T>(
     @set:JvmSynthetic
     @get:JvmSynthetic
     var value: Any? by cellBuilderApi::value
+
+    @set:JvmSynthetic
+    @get:JvmSynthetic
+    var colSpan: Int by Delegates.vetoable(1) { _, _, newValue ->
+        cellBuilderApi.colSpan = newValue
+        cursor.getAndIncColumn(newValue - 1)
+        true
+    }
+
+    @set:JvmSynthetic
+    @get:JvmSynthetic
+    var rowSpan: Int by Delegates.vetoable(1) { _, _, newValue ->
+        cellBuilderApi.rowSpan = newValue
+        cursor.setMaxRow(newValue - 1)
+        true
+    }
+
+    @JvmSynthetic
+    fun typeHint(block: () -> CellType) { cellBuilderApi.typeHint(block) }
+
+    @JvmSynthetic
+    fun attributes(block: CellLevelAttributesBuilderApi<T>.() -> Unit) {
+        cellBuilderApi.attributes(block)
+    }
+
 }
 
 class SectionRowBuilderApi<T>(
@@ -23,6 +48,11 @@ class SectionRowBuilderApi<T>(
         rowBuilderApi.cell(cursor.getAndIncColumn(1)) {
            SectionCellBuilderApi(cursor,this).apply(block)
         }
+    }
+
+    @JvmSynthetic
+    fun attributes(block: RowLevelAttributesBuilderApi<T>.() -> Unit) {
+        rowBuilderApi.attributes(block)
     }
 
 }
@@ -62,6 +92,10 @@ class LayoutCursor {
             currentRowIndex+=index
             if (currentRowIndex>maxRowIndex) maxRowIndex = currentRowIndex
         }
+    }
+
+    fun setMaxRow(index: Int = 1) {
+        if (index>maxRowIndex) maxRowIndex = index
     }
 
     fun getAndIncColumn(index: Int = 1): Int {
