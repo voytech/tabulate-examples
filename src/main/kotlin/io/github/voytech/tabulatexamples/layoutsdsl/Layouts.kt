@@ -2,10 +2,11 @@ package io.github.voytech.tabulatexamples.layoutsdsl
 
 import io.github.voytech.tabulate.api.builder.dsl.*
 import io.github.voytech.tabulate.model.attributes.cell.enums.contract.CellType
+import io.github.voytech.tabulate.template.context.AdditionalSteps
 import kotlin.properties.Delegates
 
 class SectionCellBuilderApi<T>(
-    private val cursor: LayoutCursor,
+    protected val cursor: LayoutCursor,
     private val cellBuilderApi: CellBuilderApi<T>
 ) {
     @set:JvmSynthetic
@@ -51,6 +52,13 @@ class SectionRowBuilderApi<T>(
     }
 
     @JvmSynthetic
+    fun cell(index: Int,block: SectionCellBuilderApi<T>.() -> Unit) {
+        rowBuilderApi.cell(cursor.currentColumnIndex+index) {
+            SectionCellBuilderApi(cursor,this).apply(block)
+        }
+    }
+
+    @JvmSynthetic
     fun attributes(block: RowLevelAttributesBuilderApi<T>.() -> Unit) {
         rowBuilderApi.attributes(block)
     }
@@ -64,11 +72,13 @@ class SectionBuilderApi<T>(
 
     @JvmSynthetic
     fun newRow(block: SectionRowBuilderApi<T>.() -> Unit) {
-        rowsBuilderApi.newRow(cursor.getAndIncRow(1)) {
+        val blockCall: RowBuilderApi<T>.() -> Unit = {
             SectionRowBuilderApi(cursor,this).apply(block)
-        }.also {
-            cursor.onNewRow()
         }
+        cursor.steps?.let {
+            rowsBuilderApi.newRow(cursor.getAndIncRow(1),it, blockCall)
+        } ?: rowsBuilderApi.newRow(cursor.getAndIncRow(1), blockCall)
+        cursor.onNewRow()
     }
 
 }
@@ -78,7 +88,7 @@ enum class LayoutType {
     VERTICAL
 }
 
-class LayoutCursor {
+class LayoutCursor(internal val steps: AdditionalSteps? = null) {
     var currentRowIndex: Int = 0
     var sectionRowIndex: Int = 0
     var maxRowIndex: Int = 0
@@ -128,6 +138,14 @@ class LayoutCursor {
     }
 }
 
+data class LayoutCursors(
+    private val cursors: List<LayoutCursor> = listOf(LayoutCursor(AdditionalSteps.TRAILING_ROWS)),
+    private val default: LayoutCursor = LayoutCursor()
+) {
+    fun getByStep(step: AdditionalSteps?): LayoutCursor =
+        step?.let { s -> cursors.find { s == it.steps } } ?: default
+}
+
 data class SectionsBuilder<T>(
     private val cursor: LayoutCursor,
     private val rowsBuilderApi: RowsBuilderApi<T>
@@ -140,26 +158,31 @@ data class SectionsBuilder<T>(
 }
 
 data class LayoutBuilder<T>(
-    private val cursor: LayoutCursor,
+    private val cursors: LayoutCursors,
     private val rowsBuilderApi: RowsBuilderApi<T>
 ) {
-    fun vertical(block: SectionsBuilder<T>.() -> Unit) {
-        cursor.layoutType = LayoutType.VERTICAL
-        SectionsBuilder(cursor, rowsBuilderApi).apply(block).also {
-            cursor.closeLayout()
+    fun vertical(step: AdditionalSteps? = null,block: SectionsBuilder<T>.() -> Unit) {
+        cursors.getByStep(step).let { cursor ->
+            cursor.layoutType = LayoutType.VERTICAL
+            SectionsBuilder(cursor, rowsBuilderApi).apply(block).also {
+                cursor.closeLayout()
+            }
         }
+
     }
 
-    fun horizontal(block: SectionsBuilder<T>.() -> Unit) {
-        cursor.layoutType = LayoutType.HORIZONTAL
-        SectionsBuilder(cursor, rowsBuilderApi).apply(block).also {
-            cursor.closeLayout()
+    fun horizontal(step: AdditionalSteps? = null,block: SectionsBuilder<T>.() -> Unit) {
+        cursors.getByStep(step).let { cursor ->
+            cursor.layoutType = LayoutType.HORIZONTAL
+            SectionsBuilder(cursor, rowsBuilderApi).apply(block).also {
+                cursor.closeLayout()
+            }
         }
     }
 }
 
 fun <T> RowsBuilderApi<T>.layout(block: LayoutBuilder<T>.() -> Unit) {
-    LayoutBuilder(LayoutCursor(),this).apply(block)
+    LayoutBuilder(LayoutCursors(),this).apply(block)
 }
 
 

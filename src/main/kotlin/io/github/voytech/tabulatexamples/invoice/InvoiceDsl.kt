@@ -1,25 +1,23 @@
 package io.github.voytech.tabulatexamples.invoice
 
-import io.github.voytech.tabulate.api.builder.dsl.RowsBuilderApi
-import io.github.voytech.tabulate.api.builder.dsl.newTrailingRow
 import io.github.voytech.tabulate.model.attributes.cell.*
-import io.github.voytech.tabulate.model.attributes.cell.enums.DefaultBorderStyle
-import io.github.voytech.tabulate.model.attributes.cell.enums.DefaultCellFill
-import io.github.voytech.tabulate.model.attributes.cell.enums.DefaultHorizontalAlignment
-import io.github.voytech.tabulate.model.attributes.cell.enums.DefaultWeightStyle
+import io.github.voytech.tabulate.model.attributes.cell.enums.*
 import io.github.voytech.tabulate.model.attributes.column.columnWidth
+import io.github.voytech.tabulate.template.context.AdditionalSteps
 import io.github.voytech.tabulate.template.tabulate
 import io.github.voytech.tabulatexamples.*
-import io.github.voytech.tabulatexamples.invoice.sections.invoiceStampSection
+import io.github.voytech.tabulatexamples.invoice.sections.invoiceDetailsSection
 import io.github.voytech.tabulatexamples.invoice.sections.issuerSection
-import io.github.voytech.tabulatexamples.invoice.sections.shippingDetailsSection
+import io.github.voytech.tabulatexamples.invoice.sections.addressDetailsSection
 import io.github.voytech.tabulatexamples.invoice.sections.titleSection
 import io.github.voytech.tabulatexamples.layoutsdsl.SectionsBuilder
+import io.github.voytech.tabulatexamples.layoutsdsl.field
 import io.github.voytech.tabulatexamples.layoutsdsl.layout
+import io.github.voytech.tabulatexamples.layoutsdsl.separator
 import java.math.BigDecimal
 import java.time.LocalDate
 
-fun SectionsBuilder<InvoiceLineItem>.invoiceItemsHeaderRow() {
+fun SectionsBuilder<InvoiceLineItem>.lineItemsHeaderSection() {
     section {
         newRow {
             cell {  value = "DESCRIPTION" }
@@ -51,38 +49,32 @@ class InvoiceSummaryRowsBuilder {
     lateinit var total: BigDecimal
 }
 
-//TODO section styles (section borders)
-fun RowsBuilderApi<InvoiceLineItem>.invoiceSummaryRow(
-    trailingRowStartIndex: Int = 0,
-    firstColumnIndex: Int = 3,
+fun SectionsBuilder<InvoiceLineItem>.invoiceSummarySection(
+    column: Int = 0,
     block: InvoiceSummaryRowsBuilder.() -> Unit
 ) {
-    with(InvoiceSummaryRowsBuilder().apply(block)) {
-        newTrailingRow(trailingRowStartIndex) {
-            textCell(firstColumnIndex) { "Subtotal" }
-            decimalCell { subtotal }
-        }
-        newTrailingRow {
-            textCell(firstColumnIndex) { "Discounts" }
-            decimalCell { discounts }
-        }
-        newTrailingRow {
-            textCell(firstColumnIndex) { "Taxes" }
-            decimalCell { taxes }
-        }
-        newTrailingRow {
-            textCell(firstColumnIndex) { "Total" }
-            decimalCell { total }
+    section {
+        with(InvoiceSummaryRowsBuilder().apply(block)) {
+            field(column,"Subtotal", subtotal)
+            field(column,"Discounts", discounts)
+            field(column,"Taxes", taxes)
+            field(column,"Total", total)
         }
     }
 }
 
-fun RowsBuilderApi<InvoiceLineItem>.invoiceTermsAndInstructions(trailingRowIndex: Int = 0, firstColumnIndex: Int = 0) {
-    newTrailingRow(trailingRowIndex) {
-        textCell(firstColumnIndex) { "Thank You for your business!" }
-    }
-    newTrailingRow {
-        textCell(firstColumnIndex) { "Terms & Instructions" }
+fun SectionsBuilder<InvoiceLineItem>.thankYou(span: Int = 0) {
+    section {
+        newRow {
+            cell {
+                value =  "Thank You for your business!"
+                colSpan = span
+                attributes {
+                    alignment { horizontal = DefaultHorizontalAlignment.RIGHT }
+                    text { weight = DefaultWeightStyle.BOLD }
+                }
+            }
+        }
     }
 }
 
@@ -114,32 +106,47 @@ fun Iterable<InvoiceLineItem>.printInvoice(
                     }
                 }
                 horizontal {
-                    shippingDetailsSection {
+                    section { separator(1,5) }
+                }
+                horizontal {
+                    addressDetailsSection {
                         addressTitle = "BILL TO"
                         address = issuerDetails
                     }
-                    shippingDetailsSection {
+                    addressDetailsSection {
                         addressTitle = "SHIP TO"
                         address = clientDetails
                     }
-                    invoiceStampSection {
+                    invoiceDetailsSection {
                         number = invoiceNumber
                         issueDate = invoiceIssueDate
                         dueDate = invoiceDueDate
                     }
                 }
                 horizontal {
-                    invoiceItemsHeaderRow()
+                    section { separator(1,5) }
+                }
+                horizontal {
+                    lineItemsHeaderSection()
+                }
+                horizontal(AdditionalSteps.TRAILING_ROWS) {
+                    section { separator(1,5) }
+                }
+                horizontal(AdditionalSteps.TRAILING_ROWS) {
+                    invoiceSummarySection(column = 3) {
+                        subtotal = items.sumOf { it.unitPrice.multiply(it.qty.toBigDecimal()) }
+                        discounts = BigDecimal.ZERO
+                        taxes = items.sumOf { it.vat.multiply(it.unitPrice.multiply(it.qty.toBigDecimal())) }
+                        total = items.sumOf { it.total }
+                    }
+                }
+                horizontal(AdditionalSteps.TRAILING_ROWS) {
+                    section { separator(1,5) }
+                }
+                horizontal(AdditionalSteps.TRAILING_ROWS) {
+                    thankYou(span = 5)
                 }
             }
-            // footer {  } // TODO : BUG - when I skip footer which is 0 index trailing row - rendering of remaining rows stops as there is a gap when next trailing row starts at 1.
-            invoiceSummaryRow {
-                subtotal = items.sumOf { it.unitPrice.multiply(it.qty.toBigDecimal()) }
-                discounts = BigDecimal.ZERO
-                taxes = items.sumOf { it.vat.multiply(it.unitPrice.multiply(it.qty.toBigDecimal())) }
-                total = items.sumOf { it.total }
-            }
-            invoiceTermsAndInstructions()
         }
     }
 }

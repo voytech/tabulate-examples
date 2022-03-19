@@ -4,6 +4,7 @@ import io.github.voytech.tabulate.model.attributes.cell.enums.DefaultTypeHints
 import io.github.voytech.tabulatexamples.invoice.CompanyAddress
 import io.github.voytech.tabulatexamples.invoice.InvoiceLineItem
 import io.github.voytech.tabulatexamples.layoutsdsl.SectionsBuilder
+import io.github.voytech.tabulatexamples.layoutsdsl.separator
 
 class IssuerRowBuilder {
     lateinit var imageUrl: String
@@ -43,14 +44,7 @@ fun SectionsBuilder<InvoiceLineItem>.issuerSection(block: IssuerRowBuilder.() ->
                     value = issuer.phone
                 }
             }
-            repeat((0..3).count()) {
-                newRow {
-                    cell {
-                        colSpan = 3
-                        value = ""
-                    }
-                }
-            }
+            separator(4,3)
         }
     }
 }
