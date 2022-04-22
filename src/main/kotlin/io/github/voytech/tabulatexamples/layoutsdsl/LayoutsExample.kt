@@ -1,10 +1,10 @@
 package io.github.voytech.tabulatexamples.layoutsdsl
 
-import io.github.voytech.tabulate.api.builder.dsl.CustomTable
+import io.github.voytech.tabulate.api.builder.dsl.customTable
 import io.github.voytech.tabulate.template.export
 
 fun main(args: Array<String>) {
-    CustomTable {
+    customTable {
         columns {
             (0..10).forEach { column(it){} }
         }

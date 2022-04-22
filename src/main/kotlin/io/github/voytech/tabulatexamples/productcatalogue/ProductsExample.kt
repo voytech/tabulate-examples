@@ -1,7 +1,7 @@
 package io.github.voytech.tabulatexamples.productcatalogue
 
 import io.github.voytech.tabulate.api.builder.dsl.header
-import io.github.voytech.tabulate.model.attributes.cell.Colors
+import io.github.voytech.tabulate.model.attributes.Colors
 import io.github.voytech.tabulate.model.attributes.cell.enums.DefaultBorderStyle
 import io.github.voytech.tabulate.model.attributes.cell.enums.DefaultWeightStyle
 import io.github.voytech.tabulate.model.attributes.cell.text

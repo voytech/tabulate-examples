@@ -1,6 +1,6 @@
 package io.github.voytech.tabulatexamples.layoutsdsl
 
-import io.github.voytech.tabulate.model.attributes.cell.Colors
+import io.github.voytech.tabulate.model.attributes.Colors
 import io.github.voytech.tabulate.model.attributes.cell.alignment
 import io.github.voytech.tabulate.model.attributes.cell.borders
 import io.github.voytech.tabulate.model.attributes.cell.enums.DefaultBorderStyle
@@ -55,7 +55,7 @@ fun <T, V : Any> SectionBuilderApi<T>.field(
             }
         }
         cell(column + (fieldName?.let { 1 } ?: 0)) {
-            value = fieldValue.toString()
+            value = fieldValue
             typeHint { resolveType(fieldValue) }
             attributes {
                 alignment {

@@ -1,5 +1,6 @@
 package io.github.voytech.tabulatexamples.invoice
 
+import io.github.voytech.tabulate.model.attributes.Colors
 import io.github.voytech.tabulate.model.attributes.cell.*
 import io.github.voytech.tabulate.model.attributes.cell.enums.*
 import io.github.voytech.tabulate.model.attributes.column.columnWidth
@@ -98,7 +99,9 @@ fun Iterable<InvoiceLineItem>.printInvoice(
         }
         rows {
             layout {
-                horizontal { titleSection() }
+                horizontal {
+                    titleSection()
+                }
                 horizontal {
                     issuerSection {
                         issuer = issuerDetails

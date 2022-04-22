@@ -2,6 +2,8 @@ package io.github.voytech.tabulatexamples
 
 import io.github.voytech.tabulate.api.builder.dsl.*
 import io.github.voytech.tabulate.excel.model.attributes.dataFormat
+import io.github.voytech.tabulate.model.attributes.Color
+import io.github.voytech.tabulate.model.attributes.Colors
 import io.github.voytech.tabulate.model.attributes.cell.*
 import io.github.voytech.tabulate.model.attributes.cell.enums.*
 import io.github.voytech.tabulate.model.attributes.cell.enums.contract.CellType

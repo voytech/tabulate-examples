@@ -13,9 +13,9 @@ version = "0.1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
-    //maven {
-    //   url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
-    //}
+    maven {
+       url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
+    }
 }
 
 dependencies {
@@ -23,6 +23,7 @@ dependencies {
     implementation(platform("io.github.voytech:tabulate-bom:$tabulateVersion"))
     implementation("io.github.voytech","tabulate-core")
     implementation("io.github.voytech","tabulate-excel")
+    implementation("io.github.voytech","tabulate-csv")
     implementation("io.projectreactor:reactor-core:3.4.6")
 }
 
